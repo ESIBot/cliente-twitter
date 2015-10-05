@@ -1,0 +1,67 @@
+%----------------------------------------------------------------------------------------
+% PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article} % Default font size is 12pt, it can be changed here
+
+\usepackage{geometry} % Required to change the page size to A4
+\geometry{a4paper} % Set the page size to be A4 as opposed to the default US Letter
+
+\usepackage{graphicx} % Required for including pictures
+\graphicspath{ {imgs/} }
+
+\usepackage{float} % Allows putting an [H] in \begin{figure} to specify the exact location of the figuree
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{framed}
+\usepackage{minted}
+\usemintedstyle{monokai}
+
+\linespread{1.2} % Line spacing
+
+\setlength\parindent{0pt} % Uncomment to remove all indentation from paragraphs
+
+\definecolor{bg}{HTML}{272822}
+\definecolor{gray}{RGB}{128, 128, 128}
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+% TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+
+\center % Center everything on the page
+
+\textsc{\LARGE Universidad de Sevilla}\\[1.5cm] % Name of your university/college
+\textsc{\Large ESIBot}\\[0.5cm] % Major heading such as course name
+\textsc{\large Seminario 6}\\[0.5cm] % Minor heading such as course title
+
+\HRule \\[0.4cm]
+{ \huge \bfseries Cliente Twitter}\\[0.4cm] % Title of your document
+\HRule \\[1.5cm]
+
+
+\large
+\emph{Autor:}\\
+
+Diego \textsc{Fernández Barrera}
+
+\hspace{3cm}
+
+{\large \today}\\ % Date, change the \today to a set date if you want to be precise
+
+\vfill % Fill the rest of the page with whitespace
+
+\end{titlepage}
+
+\input{section01.tex}
+\input{section02.tex}
+
+\end{document}
