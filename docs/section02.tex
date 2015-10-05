@@ -51,6 +51,12 @@ necesitar unos protocolos que nos faciliten la comunicación.
 
 \subsubsection{Bluetooth}\label{bluetooth}
 
+\begin{figure}[h]
+\includegraphics[width=0.5\textwidth]{fig01}
+\centering
+\caption{Stack de Bluetooth}
+\end{figure}
+
 Entre las diferentes posibilidades elegimos \emph{Bluetooth} porque es
 de los protocolos más usados y fáciles de usar. Con \emph{Bluetooth}
 cubriremos desde la capa física hasta la capa de transporte del modelo
@@ -72,6 +78,12 @@ protocolo MQTT, pero ha sido simplificado para ser usado en sensores (No
 implementa todo el \emph{stack} IP). Nosotros lo usaremos sobre
 \emph{Bluetooth} que, como ya hemos visto, para nosotros será como tener
 un puerto serie virtual.
+
+\begin{figure}[h]
+\includegraphics[width=\textwidth]{fig02}
+\centering
+\caption{Comunicación mediante MQTT}
+\end{figure}
 
 El funcionamiento de este protocolo encaja perfectamente con lo que
 nosotros queremos hacer. Instalaremos un \emph{broker} en la
