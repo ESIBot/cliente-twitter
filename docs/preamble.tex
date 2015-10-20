@@ -2,7 +2,8 @@
 % PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass{article} % Default font size is 12pt, it can be changed here
+\documentclass[11pt]{article} % Default font size is 12pt, it can be changed here
+% \documentclass[hidelinks]{friggeri-cv}
 
 \usepackage{geometry} % Required to change the page size to A4
 \geometry{a4paper} % Set the page size to be A4 as opposed to the default US Letter
@@ -15,53 +16,92 @@
 \usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{framed}
-\usepackage{minted}
-\usemintedstyle{monokai}
+\usepackage{parskip}
+\usepackage{tikz}
+% \usepackage{minted}
+% \usemintedstyle{monokai}
 
-\linespread{1.2} % Line spacing
+% \linespread{1.2} % Line spacing
+\renewcommand*\rmdefault{pnc}
+\renewcommand{\baselinestretch}{1.1}
 
-\setlength\parindent{0pt} % Uncomment to remove all indentation from paragraphs
+\definecolor{esibot}{HTML}{16a085}
+\definecolor{white}{RGB}{255,255,255}
 
-\definecolor{bg}{HTML}{272822}
-\definecolor{gray}{RGB}{128, 128, 128}
+\colorlet{fillheader}{esibot}
+\colorlet{header}{white}
+
+\newcommand{\header}{
+  \begin{tikzpicture}[remember picture,overlay]
+    \node [rectangle, fill=fillheader, anchor=north, minimum width=\paperwidth, minimum height=5cm] (box) at (current page.north){};
+    \node [anchor=south east] (name) at ([xshift=2cm]box) {%
+      \color{header}%
+      \begin{tabular}{l}
+        \textsc{\fontsize{17.28}{0}\selectfont \textbf{Asociación de Robótica}}\\[0.25cm]
+        \textsc{\fontsize{17.28}{0}\selectfont \textbf{de la Universidad de Sevilla}}\\[0.25cm]
+      \end{tabular}
+    };
+      \node [below of = name] (name) at ([xshift=-1.8cm]name.south) {%
+      \color{header}%
+      \begin{tabular}{l}
+        \fontsize{10}{0}\selectfont Taller de asociaciones, Sótano SO \\
+        \fontsize{10}{0}\selectfont Escuela Técnica Superior de Ingeniería \\
+        \fontsize{10}{0}\selectfont Avda. de los Descubrimientos s/n \\
+        \fontsize{10}{0}\selectfont 41092 Sevilla \\
+        \fontsize{10}{0}\selectfont esibot.es – esibot@esibot.es
+      \end{tabular}
+    };
+    \node [anchor=west] (logo) at ([xshift=2.5cm]box) {%
+      \includegraphics[width=0.35\textwidth]{esibot_logo}
+    };
+  \end{tikzpicture}
+  \vspace{0.2\paperheight}
+  \vspace{-2\parskip}
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 \begin{document}
 
 %----------------------------------------------------------------------------------------
 % TITLE PAGE
 %----------------------------------------------------------------------------------------
-
 \begin{titlepage}
-
-\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+%----------------------------------------------------------------------------------------
+% HEADER
+%----------------------------------------------------------------------------------------
+\header
 
 \center % Center everything on the page
 
-\textsc{\LARGE Universidad de Sevilla}\\[1.5cm] % Name of your university/college
-\textsc{\Large ESIBot}\\[0.5cm] % Major heading such as course name
-\textsc{\large Seminario 6}\\[0.5cm] % Minor heading such as course title
+%----------------------------------------------------------------------------------------
+% HEADING SECTIONS
+%----------------------------------------------------------------------------------------
+\textsc{\fontsize{17.28}{0}\selectfont Universidad de Sevilla}\\[1.5cm] % Name of your university/college
+\textsc{\fontsize{12  }{0}\selectfont Curso de robótica}\\[0.5cm] % Major heading such as course name
+\textsc{\fontsize{14.4}{0}\selectfont Seminario 6}\\[0.5cm] % Minor heading such as course title
 
+%----------------------------------------------------------------------------------------
+% TITLE
+%----------------------------------------------------------------------------------------
 \HRule \\[0.4cm]
-{ \huge \bfseries Cliente Twitter}\\[0.4cm] % Title of your document
+{ \fontsize{20.74}{0}\selectfont \bfseries Ejemplo práctico: Cliente Twitter}\\[0.4cm] % Title of your document
 \HRule \\[1.5cm]
 
+\fontsize{14.4}{0}\selectfont
+\emph{Autor:}
+\mbox{}
 
-\large
-\emph{Autor:}\\
-
-Diego \textsc{Fernández Barrera}
-
-\hspace{3cm}
-
-{\large \today}\\ % Date, change the \today to a set date if you want to be precise
+\textsc{Diego Fernández Barrera}
 
 \vfill % Fill the rest of the page with whitespace
-
 \end{titlepage}
 
-\input{section01.tex}
-\input{section02.tex}
+\input{sections/section01.tex}
+\newpage
+\input{sections/section02.tex}
+\input{sections/section03.tex}
 
 \end{document}
