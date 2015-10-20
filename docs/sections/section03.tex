@@ -1,0 +1,129 @@
+\section{Análisis del problema} % (fold)
+\label{sec:an_lisis_del_problema}
+
+A la hora de abordar el problema debemos definir claramente los roles que va
+a tener cada dispositivo en nuestro sistema. Un forma podría ser la siguiente.
+
+\begin{itemize}
+	\item La Raspberry Pi es el componente idóneo para realizar las tareas de
+	obtención de datos, puesto que en ella corre un sistema operativo que nos
+	facilita mucho las tareas de las conexiones a Internet. Si quisiésemos usar
+	un arduino para esto sería mucho más complejo.
+	\item Usaremos un Arduino para la parte del manejo del LCD. Es decir, el
+	arduino simplemente se limitará a recibir una cadena de texto y mostrarla
+	por la pantalla.
+\end{itemize}
+
+Este escenario descrito es muy común. Habitualmente se usará una
+\texttt{Raspberry Pi} como el elemento que procesa y obtiene datos y dejaremos
+para un \texttt{Arduino} las tareas relacionadas con el control de dispositivos,
+en este caso un LCD.
+
+\subsection{Obtención de datos} % (fold)
+\label{sub:obtenci_n_de_datos}
+
+Empecemos por la parte que deberá obtener los datos (tuits) de Internet.
+
+En primer lugar debemos pensar en cómo se pueden obtener los datos del servidor
+de Twitter. Podríamos hacer una aplicación en Python que obtuviese tuits del
+servidor del Twitter. Esta parte se da ya hecha en este ejemplo, puesto que queda
+fuera del ámbito de la electrónica y es algo más relacionado con las
+comunicaciones en Internet.
+
+Por lo tanto, dicho esto, vamos a partir de una aplicación en Python que ya
+consigue obtener los tuits y mostrarlos por consola. Modificaremos este
+comportamiento para que, en lugar de mostrarlos simplemente por consola, también
+los envíe a nuestro \texttt{Arduino} para que este pueda mostrarlo en el panel
+LCD.
+
+\subsection{El protocolo MQTT} % (fold)
+\label{sub:el_protocolo_mqtt}
+
+Ya que suponemos que tenemos nuestro tuit, ¿cómo podemos enviarlo a un Arduino?
+Podríamos simplemente enviar la cadena de texto a través de una conexión y
+funcionaría perfectamente. Sin embargo, imaginemos la siguiente situación:
+
+Queremos tener varios \texttt{Arduinos} (\texttt{Arduino} A y \texttt{Arduino B}) y varias
+\texttt{Raspberries Pi} (A, B y C) en nuestro sistema.
+
+Cada una de las \texttt{Raspberry Pi} obtiene los tuits de una cuenta diferente
+y queremos, por ejemplo, que en \texttt{Arduino} A se muestre los tuits de las
+\texttt{Raspberry} A y B y en \texttt{Arduino} B queremos que se muestren los
+tuits de todas las \texttt{Raspberries}.
+
+La cosa se vuelve mucho más complicada. Cuando ahora una \texttt{Raspberry} recibe
+un tuit, ¿a quién se le envía?. Para poder realizarlo de esta forma, cada dispositivo
+debe conocer la configuración del dispositivo remoto. Si el sistema estuviese
+compuesto por muchos dispostivos sería casi imposible.
+
+Para eso existen los \textbf{protocolos de nivel de aplicación}. Estos protocolos
+funcionan sobre los dispositivos que usamos para enviar datos, como Bluetooth y
+WiFi y nos permiten simplificar las comunicaciones. En nuestro caso usaremos
+\textbf{MQTT} como protocolo de nivel de aplicación por ser muy sencillo y fácil
+de implementar en \texttt{Arduino} y en \texttt{Raspberry Pi}.
+
+MQTT nos permite crear un \texttt{broker} donde se
+conecten múltiples clientes. Existen dos tipos de clientes, los publicadores y
+los suscriptores. Además en cada broker la información se organiza en diferenes
+\texttt{topics}.
+
+El funcionamiento es muy sencillo, un cliente se conecta a un \texttt{broker} y
+puede \textbf{publicar} un mensaje en un determinado \texttt{topic}. Un cliente
+también puedeo \textbf{suscribirse} a un \texttt{topic}.
+
+De esta forma, todos los clientes que estén suscrito a un \texttt{topic} recibiŕan
+todos los mensajes que otros clientes publiquen en dicho \texttt{topic}. Esto se
+conoce como un protocolo \textbf{PUBLISH/SUSCRIBE}.
+
+Si volvemos a nuestro escenario, parece que encaja perfectamente todo. Podríamos
+instalar un \texttt{broker} en nuestra \texttt{Raspberry Pi} al que se conecten
+los \texttt{Arduinos} como \textbf{suscriptores} y nuestra aplicación en
+\texttt{Python} como \textbf{publicadores}. Cuando obtenemos un tuit del
+servidor de Twitter de la cuenta ``Usuario1'' podemos enviarlo al \texttt{topic}
+``Usuario1''. De esta forma, todos los \texttt{Arduinos} que estén suscritos
+al \texttt{topic} ``Usuario1'' recibirán inmediátamente el tuit.
+
+\subsection{Bluetooth} % (fold)
+\label{sub:bluetooth}
+
+Ya hemos definido nuestro protocolo de nivel de aplicación, pero ¿cómo viaje el
+mensaje que hemos creado desde nuestra \texttt{Raspberry Pi} hasta nuestro
+\texttt{Arduino}?
+
+Necesitaremos usar algún dispositivo que nos permita la comunicación. Para ello
+vamos a usar \textbf{Módulos Bluetooth}. Estos módulo utilizan el protocolo
+Bluetooth para ofrecernos una comunicación bidirecional.
+
+El funcionamiento es muy sencillo ya que es exactamente igual que enviar datos
+por puerto serie, de hecho, en nuestro \texttt{Arduino} el módulo estará
+directamente conectado al puerto serie, por lo que no notaremos ninguna
+diferencia. En cuanto a la \texttt{Raspberry Pi} no necesitaremos comunicarnos
+directamente con el módulo Bluetooth ya que para ello se encargará un componente
+de MQTT.
+
+Recordemos que para enviar un dato por puerto serie usábamos la función:
+
+\texttt{DigitalWrite("Hola Mundo")}.
+
+\subsection{Panel LCD} % (fold)
+\label{sub:panel_lcd}
+
+Usaremos un panel T6963C, que tiene una resolución de  160x128 pixeles monocromático
+que conectaremos a nuestro \texttt{Arduino}. Para comunicarnos con él usaremos
+también el puerto serie.
+
+Puesto que  el \texttt{Arduino UNO} sólamente dispone
+de un único puerto serie, tendremos que usar una emulación de puerto serie
+en otros pines para poder conectar el panel. Usar un puerto serie emulado
+tiene algunas desventajas, pero en este caso no será importante. El funcionamiento
+de un puerto serie emulado es idéntico al de un puerto serie estándar.
+
+En esta pantalla imprimiremos el último tuit que hayamos recibido desde la
+\texttt{Raspberry Pi} con el siguiente formato:
+
+\begin{verbatim}
+@ESIBot 18:57 el 5/10/2015
+Hoy han comenzado las actividades para este curso con el
+1er seminario de conceptos básicos. Mañana repetimos, de
+16 a 18 en la 110 ;)
+\end{verbatim}

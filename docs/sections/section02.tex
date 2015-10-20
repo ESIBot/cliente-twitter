@@ -1,0 +1,22 @@
+\section{Enunciado}\label{enunciado}
+
+Se propone realizar un cliente de Twitter que sea capaz de obtener tuits de una
+cuenta dada e imprimirlo sen una pantalla LCD en tiempo real. Para ello se
+deberá usar una \texttt{Raspberry Pi} conectada a Internet por WiFi que ejecute
+una aplcación que obtenga los tuits de la API de Twitter y los envíe a un
+\texttt{Arduino} para que este lo muestre en una pantalla LCD.
+
+Para la comunicación entre \texttt{Arduino} y \texttt{Raspberry Pi} se deberá
+usar \texttt{MQTT} como protocolo de mensajería.
+
+Como lenguaje de programación se uará Python.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig03}
+  \caption{Diagrama del sistema}
+  \label{fig:figure1}
+\end{figure}
+
+\textbf{NOTA:} La parte de la aplicación que obtiene los tuits de la API de
+tuiter queda fuera del ámbito de este ejemplo.
