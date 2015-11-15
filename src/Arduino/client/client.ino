@@ -6,13 +6,24 @@
 
 #define TOPIC "test"
 
+#define BUFFER_SIZE 512
+
 #define NUMFLAKES 10
 #define XPOS 0
 #define YPOS 1
 #define DELTAY 2
 
+struct buffer {
+	uint8_t buf[BUFFER_SIZE];
+	uint8_t offset;
+	uint8_t len;
+};
+
 Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 MQTTSN mqttsn;
+
+struct buffer mqtt_buffer;
+uint8_t msg_len = 0;
 
 uint16_t u16TopicID;
 bool suscribed = false;
@@ -67,34 +78,38 @@ void MQTTSN_gwinfo_handler(const msg_gwinfo *msg) {
 }
 
 void CheckSerial() {
-	uint16_t cnt = 0;
-	uint8_t offset = 0;
-	uint8_t msg_len = 0;
-	uint8_t buffer[512];
 	uint8_t *msg = NULL;
 	int i = 0;
-	int j = 0;
+	int msgs = 0;
 
 	while (Serial1.available()) {
-		buffer[cnt++] = Serial1.read();
+		mqtt_buffer.buf[mqtt_buffer.len++] = Serial1.read();
 	}
 
-	// Recibo datos
-	if (cnt > 0) {
+	// Serial.print("BUFFER - "); Serial.println(mqtt_buffer.len);
+	// Tenemos, al menos, un mensaje completo en el buffer
+	while ((msg_len = mqtt_buffer.buf[mqtt_buffer.offset]) <=
+	        mqtt_buffer.len - mqtt_buffer.offset &&
+	        msg_len != 0) {
+		msgs++;
+		msg = (uint8_t *) calloc(msg_len, sizeof(char));
 
-		while (cnt >= msg_len) {
-			msg_len = buffer[offset];
-
-			msg = (uint8_t *) calloc(msg_len, sizeof(uint8_t));
-			for (i = 0 ; i < msg_len ; i++, j++) {
-				msg[i] = buffer[j];
-			}
-
-			cnt -= msg_len;
-			offset += msg_len;
-			mqttsn.parse_stream(msg, msg_len);
-			free(msg);
+		Serial.print("MESSAGE - LENGTH: "); Serial.println(msg_len);
+		Serial.print("MESSAGE - DATA: ");
+		for (i = 0 ; i < msg_len ; i++) {
+			msg[i] = mqtt_buffer.buf[mqtt_buffer.offset++];
+			Serial.print("0x"); Serial.print(msg[i], HEX); Serial.print(" ");
 		}
+		Serial.println("");
+
+		mqttsn.parse_stream(msg, msg_len);
+		free(msg);
+	}
+
+	if (msgs) {
+		mqtt_buffer.offset = 0;
+		mqtt_buffer.len = 0;
+		memset(mqtt_buffer.buf, 0, BUFFER_SIZE);
 	}
 }
 
