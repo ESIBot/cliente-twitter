@@ -35,13 +35,13 @@ void setup() {
 	Serial.println("DISPLAY - Iniciando display...");
 	display.begin();
 	display.setContrast(50);
+	delay(2000);
 }
 
 void loop() {
 	uint8_t index;
 
 	CheckSerial();
-	delay(2000);
 
 	if (mqttsn.wait_for_response()) {
 		return;
