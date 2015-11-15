@@ -29,8 +29,10 @@ uint16_t u16TopicID;
 bool suscribed = false;
 
 void setup() {
+	Serial.begin(9600);
 	Serial1.begin(9600);
 
+	Serial.println("DISPLAY - Iniciando display...");
 	display.begin();
 	display.setContrast(50);
 }
@@ -47,12 +49,14 @@ void loop() {
 
 	if (!mqttsn.connected()) {
 		lcd_print("CONECTANDO...");
+		Serial.println("MQTT - Conectando...");
 		mqttsn.connect(0, 10, "arduino");
 		return;
 	}
 
 	u16TopicID = mqttsn.find_topic_id(TOPIC, &index);
 	if (u16TopicID == 0xffff) {
+		Serial.println("MQTT - Registrando topic");
 		mqttsn.register_topic(TOPIC);
 		return;
 	}
@@ -60,6 +64,7 @@ void loop() {
 	if (!suscribed) {
 		mqttsn.subscribe_by_name(0, TOPIC);
 		suscribed = true;
+		Serial.println("MQTT - Suscrito");
 		lcd_print("INICIADO");
 		return;
 	}
@@ -71,6 +76,7 @@ void MQTTSN_serial_send(uint8_t *message_buffer, int length) {
 }
 
 void MQTTSN_publish_handler(const msg_publish *msg) {
+	Serial.print("MQTT - PUBLISH: "); Serial.println(msg->data);
 	lcd_print(msg->data);
 }
 
