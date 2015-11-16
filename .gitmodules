@@ -1,0 +1,3 @@
+[submodule "src/Arduino/libraries/mqttsn"]
+	path = src/Arduino/libraries/mqttsn
+	url = https://github.com/Bigomby/MQTT-SN-Arduino
