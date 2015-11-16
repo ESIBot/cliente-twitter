@@ -4,114 +4,142 @@
 #include <Adafruit_PCD8544.h>
 #include <mqttsn-messages.h>
 
-#define TOPIC "test"
+// Definimos el nombre del topic al cual queremos suscribirnos
+#define TOPIC "seminario6"
 
-#define BUFFER_SIZE 512
-
+// Definiciones para la pantalla LCD
 #define NUMFLAKES 10
 #define XPOS 0
 #define YPOS 1
 #define DELTAY 2
 
+// Tamaño del buffer que usaremos para recibir datos por Bluetooth
+#define BUFFER_SIZE 256
+
+// Estructura que usaremos para almacenar los datos que vamos recibiendo
 struct buffer {
 	uint8_t buf[BUFFER_SIZE];
 	uint8_t offset;
 	uint8_t len;
 };
 
+// Creamos los objetos para usar el LCD y MQTT
 Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 MQTTSN mqttsn;
 
-struct buffer mqtt_buffer;
-uint8_t msg_len = 0;
-
-uint16_t u16TopicID;
-bool suscribed = false;
+// Variables globales que usaremos
+struct buffer mqtt_buffer;		// Buffer para almacenar los datos que llegan
+uint16_t u16TopicID;					// ID del topic al que nos suscribimos
+bool suscribed = false;				// Para controlar si ya nos hemos suscrito
 
 void setup() {
-	Serial.begin(9600);
-	Serial1.begin(9600);
-
-	Serial.println("DISPLAY - Iniciando display...");
-	display.begin();
-	display.setContrast(50);
-	delay(2000);
+	Serial.begin(9600);				// Iniciamos puerto serie
+	display.begin();					// Iniciamos display
+	display.setContrast(50);	// Ajustamos el contraste del display
+	delay(2000);							// Esperamos a que el display termine de iniciarse
 }
 
 void loop() {
-	uint8_t index;
+	uint8_t index; 	// Índice del topic con el que estamos
 
+	// Comprobamos si tenemos datos en el puerto serie y los leemos
 	CheckSerial();
 
+	// Si aún no hemos terminado de procesar una respuesta no continuamos
 	if (mqttsn.wait_for_response()) {
 		return;
 	}
 
+	// Si no estamos conectado nos conectamos
 	if (!mqttsn.connected()) {
 		lcd_print("CONECTANDO...");
-		Serial.println("MQTT - Conectando...");
 		mqttsn.connect(0, 10, "arduino");
+		suscribed = false;
+		delay(1000);
 		return;
 	}
 
+	// Buscamos un topic por su nombre en nuestra memoria
 	u16TopicID = mqttsn.find_topic_id(TOPIC, &index);
+
+	// Si no lo encontramos tenemos que registararlo
 	if (u16TopicID == 0xffff) {
-		Serial.println("MQTT - Registrando topic");
 		mqttsn.register_topic(TOPIC);
+		delay(1000);
 		return;
 	}
 
+	// Si no estamos sucrito al topic nos suscribimos
 	if (!suscribed) {
 		mqttsn.subscribe_by_name(0, TOPIC);
 		suscribed = true;
-		Serial.println("MQTT - Suscrito");
 		lcd_print("INICIADO");
+		delay(1000);
 		return;
 	}
 }
 
+/**
+ * Definimos cómo se envían los datos por puerto serie de MQTT
+ */
 void MQTTSN_serial_send(uint8_t *message_buffer, int length) {
-	Serial1.write(message_buffer, length);
-	Serial1.flush();
+	Serial.write(message_buffer, length);
+	Serial.flush();
 }
 
+/**
+ * Definimos lo que hacemos cuando recibimos un mensaje del topic
+ */
 void MQTTSN_publish_handler(const msg_publish *msg) {
-	Serial.print("MQTT - PUBLISH: "); Serial.println(msg->data);
 	lcd_print(msg->data);
 }
 
+/**
+ * Definimos lo que hacemos cuando recibimos mensajes de una pasarela
+ */
 void MQTTSN_gwinfo_handler(const msg_gwinfo *msg) {
 }
 
+/**
+ * En esta función se leen datos de puerto serie y se extraen los mensajes
+ * MQTT. Una vez extraído se le pasa a la librería para que los interprete.
+ */
 void CheckSerial() {
-	uint8_t *msg = NULL;
-	int i = 0;
-	int msgs = 0;
+	uint8_t *msg = NULL;		// Donde extraemos los mensajes leídos del buffer
+	int msgs = 0;						// Número de mensajes leído del buffer
+	uint8_t msg_len = 0;		// Tamaño del mensaje leído del buffer
+	int i = 0;							// Índice para bucles
 
-	while (Serial1.available()) {
-		mqtt_buffer.buf[mqtt_buffer.len++] = Serial1.read();
+	// Comprobamos que haya datos en el buffer de la UART y se almacenan en
+	// nuestro buffer
+	while (Serial.available()) {
+		mqtt_buffer.buf[mqtt_buffer.len++] = Serial.read();
 	}
 
-	// Serial.print("BUFFER - "); Serial.println(mqtt_buffer.len);
 	// Tenemos, al menos, un mensaje completo en el buffer
 	while ((msg_len = mqtt_buffer.buf[mqtt_buffer.offset]) <=
 	        mqtt_buffer.len - mqtt_buffer.offset &&
 	        msg_len != 0) {
-		msgs++;
+
+		// Reservamos memoria para almacenar el mensaje leído
 		msg = (uint8_t *) calloc(msg_len, sizeof(char));
 
-		Serial.print("MESSAGE - LENGTH: "); Serial.println(msg_len);
-		Serial.print("MESSAGE - DATA: ");
+		// Copiamos el mensaje en la variable "msg"
 		for (i = 0 ; i < msg_len ; i++) {
 			msg[i] = mqtt_buffer.buf[mqtt_buffer.offset++];
-			Serial.print("0x"); Serial.print(msg[i], HEX); Serial.print(" ");
 		}
-		Serial.println("");
 
+		// Le pasamos el mensaje a la librería para que lo trate
 		mqttsn.parse_stream(msg, msg_len);
+
+		// Liberamos la memoria reservada
 		free(msg);
+
+		// Incrementamos el número de mensajes leídos
+		msgs++;
 	}
 
+	// Si hemos procesado algún mensaje limpiamos el buffer.
 	if (msgs) {
 		mqtt_buffer.offset = 0;
 		mqtt_buffer.len = 0;
@@ -119,6 +147,9 @@ void CheckSerial() {
 	}
 }
 
+/**
+ * Imprime por LCD un texto
+ */
 void lcd_print(const char *str) {
 	display.clearDisplay();
 	display.setCursor(0, 0);
