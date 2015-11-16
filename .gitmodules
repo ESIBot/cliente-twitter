@@ -1,3 +1,9 @@
 [submodule "src/Arduino/libraries/mqttsn"]
 	path = src/Arduino/libraries/mqttsn
 	url = https://github.com/Bigomby/MQTT-SN-Arduino
+[submodule "src/Arduino/libraries/Adafruit_GFX"]
+	path = src/Arduino/libraries/Adafruit_GFX
+	url = https://github.com/adafruit/Adafruit-GFX-Library
+[submodule "src/Arduino/libraries/Adafruit_PCD8544"]
+	path = src/Arduino/libraries/Adafruit_PCD8544
+	url = https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library
