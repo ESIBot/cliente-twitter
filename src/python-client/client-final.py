@@ -19,9 +19,6 @@ consumer_secret=""
 access_token=""
 access_token_secret=""
 
-""" Podemos obtener la ID de un usuario en http://gettwitterid.com """
-user_id=""
-
 """
 Creamos un listener. Este objeto espera los nuevos tuits y hace algo con ellos,
 por ejemplo, mostrarlos por pantalla.
@@ -42,6 +39,10 @@ class StdOutListener(StreamListener):
     def on_error(self, status):
         print(status)
 
+"""
+Esta clase es como "StdOutListener" pero nuestra intencion aqui es mandar los
+mensajes al broker MQTT.
+"""
 class MQTTListener(StreamListener):
     previous_millis = 0
     threshold = 10000
